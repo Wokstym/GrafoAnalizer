@@ -44,3 +44,5 @@ tasks {
 	}
 }
 
+springBoot { mainClass.set("com.example.RetweetCounterApplicationKt") }
+
