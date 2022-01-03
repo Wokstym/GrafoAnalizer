@@ -4,5 +4,5 @@ app:
 
 
 twitter:
-  token: <Insert token here>
+  token: ${MYSQL_HOST}
   url: https://api.twitter.com/2/
