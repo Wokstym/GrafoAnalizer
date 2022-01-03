@@ -1,3 +1,8 @@
 app:
   name: ${name}
   version: ${version}
+
+
+twitter:
+  token: <Insert token here>
+  url: https://api.twitter.com/2/
