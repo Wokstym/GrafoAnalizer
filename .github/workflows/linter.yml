@@ -1,0 +1,32 @@
+name: Code quality review
+
+on:
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  ktlint:
+    name: Check Code Quality
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clone repo
+        uses: actions/checkout@master
+        with:
+          fetch-depth: 1
+      - name: ktlint
+        uses: ScaCap/action-ktlint@master
+        with:
+          github_token: ${{ secrets.github_token }}
+          reporter: github-pr-review
+          level: info
+          filter_mode: nofilter
+          fail_on_error: true
+      - name: Comment suggestion
+        uses: unsplash/comment-on-pr@master
+        if: failure()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          msg: "Code review failed\n\nYou can run `gradle ktlintCheck` to list problems locally or `gradle ktlintFormat` to try to fix them automatically, if you find them valid."
+          check_for_duplicate_msg: false

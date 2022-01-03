@@ -1,10 +1,10 @@
 package com.example.graph.application
 
-import com.example.twitter.client.TwitterClient
 import com.example.common.UnorderedPair
 import com.example.graph.domain.GraphData
 import com.example.graph.domain.TwitterRetweetEdge
 import com.example.graph.domain.TwitterUserNode
+import com.example.twitter.client.TwitterClient
 import com.example.twitter.domain.User
 import org.springframework.stereotype.Service
 

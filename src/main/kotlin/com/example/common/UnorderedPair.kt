@@ -16,7 +16,7 @@ class UnorderedPair<T>(
         other as UnorderedPair<*>
 
         return (other.first == first && other.second == second) ||
-                (other.first == second && other.second == first)
+            (other.first == second && other.second == first)
     }
 
     override fun hashCode(): Int {

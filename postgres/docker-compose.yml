@@ -1,0 +1,10 @@
+version: '3.5'
+
+services:
+  grafo-db:
+    container_name: grafo-postgres
+    build: .
+    ports:
+      - 2777:5432
+    environment:
+      POSTGRES_PASSWORD: postgres

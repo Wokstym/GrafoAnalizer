@@ -1,0 +1,4 @@
+# For klinter rules that it should ignore
+# !!WARNING DO NOT FORMAT THIS FILE - there should not be spaces between arguments and equals sign
+[{*.kt,*.kts}]
+disabled_rules=import-ordering,no-wildcard-imports
