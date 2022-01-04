@@ -27,10 +27,6 @@ class SecurityConfiguration(
         http.csrf().disable()
         http
             .authorizeRequests()
-            .mvcMatchers(
-                HttpMethod.GET,
-                "/ingredient/**"
-            ).permitAll()
             .mvcMatchers(HttpMethod.POST, "/login", "/users").permitAll()
             .anyRequest().authenticated()
             .and()
