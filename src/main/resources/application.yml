@@ -1,8 +1,24 @@
 app:
   name: ${name}
   version: ${version}
+  security.admin:
+      username: admin
+      password: \$2a\$12\$ueEyX.19FWh/3BhIKhdBI.EYn4j3CvShKkaBhZ7576aiED9rrNTC2
+      roles: ROLE_ADMIN
 
 
 twitter:
   token: \${TOKEN}
   url: https://api.twitter.com/2/
+
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:2777/postgres
+    username: postgres
+    password: postgres
+  jpa:
+    properties.hibernate:
+      dialect: org.hibernate.dialect.PostgreSQLDialect
+      enable_lazy_load_no_trans: true
+    hibernate.ddl-auto: update

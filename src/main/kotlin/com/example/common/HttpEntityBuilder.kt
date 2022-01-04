@@ -25,4 +25,3 @@ class HttpEntityBuilder<T>(
 
     fun build() = HttpEntity<T>(body, headers)
 }
-

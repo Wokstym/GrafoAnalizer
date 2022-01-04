@@ -1,8 +1,7 @@
 package com.example.twitter.client
 
-
-import com.example.twitter.domain.ListInfoData
 import com.example.common.HttpEntityBuilder
+import com.example.twitter.domain.ListInfoData
 import com.example.twitter.domain.TweetInfo
 import com.example.twitter.domain.TwitterTweetResponse
 import com.example.twitter.domain.User
@@ -10,12 +9,10 @@ import org.apache.logging.log4j.LogManager
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.*
 import org.springframework.stereotype.Component
-
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.util.UriComponentsBuilder
 import java.lang.IllegalArgumentException
 import java.time.LocalDateTime
-
 
 @Component
 class TwitterClient(
@@ -53,7 +50,6 @@ class TwitterClient(
         return ListInfoData(inRangeData, users, referencedTweetsData)
     }
 
-
     private fun RestTemplate.getTweetsFromList(
         listId: String,
         nextPageToken: String? = null
@@ -78,5 +74,4 @@ class TwitterClient(
         }
         return exchange.body!!
     }
-
 }
