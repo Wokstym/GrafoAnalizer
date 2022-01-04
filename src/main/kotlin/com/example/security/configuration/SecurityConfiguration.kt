@@ -46,7 +46,7 @@ class SecurityConfiguration(
     }
 
     @Bean
-    fun authenticationProvider(): AuthenticationProvider? {
+    fun authenticationProvider(): AuthenticationProvider {
         return DaoAuthenticationProvider().apply {
             setUserDetailsService(service)
             setPasswordEncoder(passwordEncoder())
@@ -54,7 +54,7 @@ class SecurityConfiguration(
     }
 
     @Bean
-    fun passwordEncoder(): PasswordEncoder? {
+    fun passwordEncoder(): PasswordEncoder {
         return BCryptPasswordEncoder()
     }
 }
