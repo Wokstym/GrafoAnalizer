@@ -14,8 +14,8 @@ class GraphService(
     val client: TwitterClient
 ) {
 
-    fun generateFromList(listId: String, client: OAuth2AuthorizedClient): GraphData {
-        val info = this.client.getListInfo(listId, client)
+    fun generateFromList(listId: String, authorizedClient: OAuth2AuthorizedClient): GraphData {
+        val info = client.getListInfo(listId, authorizedClient)
 
         val users: Map<String, User> = info.tweetAuthorsById
         val referencedTweetsData = info.referencedTweetsData.associateBy { it.id }

@@ -18,13 +18,11 @@ class CustomAuthorizationRequestResolver(
     authorizationRequestBaseUri: String
 ) : OAuth2AuthorizationRequestResolver {
 
-    private val defaultResolver: OAuth2AuthorizationRequestResolver
+    private val defaultResolver: OAuth2AuthorizationRequestResolver =
+        DefaultOAuth2AuthorizationRequestResolver(repo, authorizationRequestBaseUri)
+
     private val secureKeyGenerator: StringKeyGenerator =
         Base64StringKeyGenerator(Base64.getUrlEncoder().withoutPadding(), 96)
-
-    init {
-        defaultResolver = DefaultOAuth2AuthorizationRequestResolver(repo, authorizationRequestBaseUri)
-    }
 
     override fun resolve(request: HttpServletRequest): OAuth2AuthorizationRequest? {
         val req = defaultResolver.resolve(request)
