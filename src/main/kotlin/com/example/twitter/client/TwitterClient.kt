@@ -35,7 +35,7 @@ class TwitterClient(
         val referencedTweetsData: MutableList<TweetInfo> = response.includes.referencedTweetsData.toMutableList()
         var count = 1
 
-        while (!data.last().createdAt.isBefore(maxDate)) {
+        while (!data.last().createdAt.isBefore(maxDate) && response.meta.nextToken != null) {
             response = restTemplate.getTweetsFromList(listId, accessToken, response.meta.nextToken)
             data += response.data
             users += response.includes.users
