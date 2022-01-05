@@ -6,6 +6,7 @@ import com.example.graph.domain.TwitterRetweetEdge
 import com.example.graph.domain.TwitterUserNode
 import com.example.twitter.client.TwitterClient
 import com.example.twitter.domain.User
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClient
 import org.springframework.stereotype.Service
 
 @Service
@@ -13,8 +14,8 @@ class GraphService(
     val client: TwitterClient
 ) {
 
-    fun generateFromList(listId: String): GraphData {
-        val info = client.getListInfo(listId)
+    fun generateFromList(listId: String, authorizedClient: OAuth2AuthorizedClient): GraphData {
+        val info = client.getListInfo(listId, authorizedClient)
 
         val users: Map<String, User> = info.tweetAuthorsById
         val referencedTweetsData = info.referencedTweetsData.associateBy { it.id }

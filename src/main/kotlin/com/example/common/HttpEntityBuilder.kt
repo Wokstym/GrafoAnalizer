@@ -21,7 +21,7 @@ class HttpEntityBuilder<T>(
         return this
     }
 
-    fun authorization(token: String) = header("Authorization", token)
+    fun bearerAuthorization(token: String) = header("Authorization", "Bearer $token")
 
     fun build() = HttpEntity<T>(body, headers)
 }
