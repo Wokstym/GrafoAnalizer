@@ -25,7 +25,7 @@ class SecurityConfiguration(
     override fun configure(http: HttpSecurity) {
         http
             .authorizeRequests()
-            .mvcMatchers(HttpMethod.POST, "/login", "/users", "/oauth2/**").permitAll()
+            .mvcMatchers(HttpMethod.POST, "/login", "/oauth2/**").permitAll()
             .anyRequest().authenticated()
             .and()
             .httpBasic()
