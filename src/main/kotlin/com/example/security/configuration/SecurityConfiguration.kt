@@ -1,60 +1,72 @@
 package com.example.security.configuration
 
-import com.example.security.application.GrafioAnalizerUserDetailsService
-import com.example.security.application.JsonUsernameAuthenticationFilter
-import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpMethod
-import org.springframework.security.authentication.AuthenticationProvider
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder
+import org.springframework.http.converter.FormHttpMessageConverter
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
-import org.springframework.security.crypto.password.PasswordEncoder
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
+import org.springframework.security.oauth2.client.endpoint.DefaultAuthorizationCodeTokenResponseClient
+import org.springframework.security.oauth2.client.endpoint.OAuth2AccessTokenResponseClient
+import org.springframework.security.oauth2.client.endpoint.OAuth2AuthorizationCodeGrantRequest
+import org.springframework.security.oauth2.client.http.OAuth2ErrorResponseErrorHandler
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository
+import org.springframework.security.oauth2.core.http.converter.OAuth2AccessTokenResponseHttpMessageConverter
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository
+import org.springframework.web.client.RestTemplate
 
 @Configuration
 @EnableGlobalMethodSecurity(securedEnabled = true)
-@EnableConfigurationProperties(AdminConfig::class)
 class SecurityConfiguration(
-    var service: GrafioAnalizerUserDetailsService
+    var repository: ClientRegistrationRepository
 ) : WebSecurityConfigurerAdapter() {
 
     override fun configure(http: HttpSecurity) {
-        http.csrf().disable()
         http
             .authorizeRequests()
-            .mvcMatchers(HttpMethod.POST, "/login", "/users").permitAll()
+            .mvcMatchers(HttpMethod.POST, "/login", "/users", "/oauth2/**").permitAll()
             .anyRequest().authenticated()
             .and()
             .httpBasic()
             .and()
-            .addFilterBefore(authenticationFilter(), UsernamePasswordAuthenticationFilter::class.java)
-    }
-
-    private fun authenticationFilter(): JsonUsernameAuthenticationFilter {
-        return JsonUsernameAuthenticationFilter().apply {
-            setAuthenticationManager(super.authenticationManager())
-        }
-    }
-
-    override fun configure(auth: AuthenticationManagerBuilder) {
-        auth.authenticationProvider(authenticationProvider())
+            .csrf { it.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()) }
+            .oauth2Login()
+            .authorizationEndpoint()
+            .authorizationRequestResolver(CustomAuthorizationRequestResolver(repository, "/oauth2/authorization"))
+            .and().tokenEndpoint()
+            .accessTokenResponseClient(accessTokenResponseClient())
     }
 
     @Bean
-    fun authenticationProvider(): AuthenticationProvider {
-        return DaoAuthenticationProvider().apply {
-            setUserDetailsService(service)
-            setPasswordEncoder(passwordEncoder())
-        }
+    fun accessTokenResponseClient(): OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest?>? {
+        val accessTokenResponseClient = DefaultAuthorizationCodeTokenResponseClient()
+        accessTokenResponseClient.setRequestEntityConverter(CustomRequestEntityConverter())
+        val tokenResponseHttpMessageConverter = OAuth2AccessTokenResponseHttpMessageConverter()
+        val restTemplate = RestTemplate(listOf(FormHttpMessageConverter(), tokenResponseHttpMessageConverter))
+        restTemplate.errorHandler = OAuth2ErrorResponseErrorHandler()
+        accessTokenResponseClient.setRestOperations(restTemplate)
+        return accessTokenResponseClient
     }
 
-    @Bean
-    fun passwordEncoder(): PasswordEncoder {
-        return BCryptPasswordEncoder()
-    }
+
+
+
+//    override fun configure(auth: AuthenticationManagerBuilder) {
+//        auth.authenticationProvider(authenticationProvider())
+//    }
+//
+//    @Bean
+//    fun authenticationProvider(): AuthenticationProvider {
+//        return DaoAuthenticationProvider().apply {
+//            setUserDetailsService(service)
+//            setPasswordEncoder(passwordEncoder())
+//        }
+//    }
+//
+//    @Bean
+//    fun passwordEncoder(): PasswordEncoder {
+//        return BCryptPasswordEncoder()
+//    }
 }
+

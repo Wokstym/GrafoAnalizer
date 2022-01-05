@@ -11,9 +11,10 @@ import javax.persistence.*
 @EntityListeners(AuditingEntityListener::class)
 class UserEntity() {
 
-    constructor(username: String, password: String) : this() {
+    constructor(username: String, twitterId: String, name: String) : this() {
         this.username = username
-        this.password = password
+        this.twitterId = twitterId
+        this.nameAndSurname = name
     }
 
     @Id
@@ -21,12 +22,13 @@ class UserEntity() {
     var id: Long = 0
 
     lateinit var username: String
-    lateinit var password: String
+    lateinit var nameAndSurname: String
+    lateinit var twitterId: String
 
     @CollectionTable(name = "users_roles", joinColumns = [JoinColumn(name = "user_id")])
     @ElementCollection(fetch = FetchType.EAGER)
     @Column(name = "role")
-    val roles: Set<String> = setOf("ROLE_USER")
+    var roles: Set<String> = setOf("ROLE_USER")
 
     @CreatedDate
     lateinit var createdAt: LocalDateTime
