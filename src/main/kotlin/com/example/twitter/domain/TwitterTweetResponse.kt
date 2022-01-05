@@ -25,7 +25,7 @@ class TweetInfo(
 
 class MetaData(
     @field:JsonProperty("next_token")
-    val nextToken: String,
+    val nextToken: String?,
     @field:JsonProperty("result_count")
     val resultCount: Int
 )
