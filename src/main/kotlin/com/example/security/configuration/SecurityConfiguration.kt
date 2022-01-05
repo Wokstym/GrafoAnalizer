@@ -34,39 +34,20 @@ class SecurityConfiguration(
             .oauth2Login()
             .authorizationEndpoint()
             .authorizationRequestResolver(CustomAuthorizationRequestResolver(repository, "/oauth2/authorization"))
-            .and().tokenEndpoint()
+            .and()
+            .tokenEndpoint()
             .accessTokenResponseClient(accessTokenResponseClient())
     }
 
     @Bean
-    fun accessTokenResponseClient(): OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest?>? {
-        val accessTokenResponseClient = DefaultAuthorizationCodeTokenResponseClient()
-        accessTokenResponseClient.setRequestEntityConverter(CustomRequestEntityConverter())
+    fun accessTokenResponseClient(): OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest> {
         val tokenResponseHttpMessageConverter = OAuth2AccessTokenResponseHttpMessageConverter()
         val restTemplate = RestTemplate(listOf(FormHttpMessageConverter(), tokenResponseHttpMessageConverter))
         restTemplate.errorHandler = OAuth2ErrorResponseErrorHandler()
-        accessTokenResponseClient.setRestOperations(restTemplate)
-        return accessTokenResponseClient
+
+        return DefaultAuthorizationCodeTokenResponseClient().apply {
+            setRequestEntityConverter(CustomRequestEntityConverter())
+            setRestOperations(restTemplate)
+        }
     }
-
-
-
-
-//    override fun configure(auth: AuthenticationManagerBuilder) {
-//        auth.authenticationProvider(authenticationProvider())
-//    }
-//
-//    @Bean
-//    fun authenticationProvider(): AuthenticationProvider {
-//        return DaoAuthenticationProvider().apply {
-//            setUserDetailsService(service)
-//            setPasswordEncoder(passwordEncoder())
-//        }
-//    }
-//
-//    @Bean
-//    fun passwordEncoder(): PasswordEncoder {
-//        return BCryptPasswordEncoder()
-//    }
 }
-
