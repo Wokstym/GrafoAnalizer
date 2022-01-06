@@ -25,7 +25,7 @@ spring:
             providerId: twitter
             clientId: dm91MTRyamwxTlV5RDg2X01IeTU6MTpjaQ
             clientSecret: Ulq5ZJuSQvFmRS7GKZQ25i7s9Ee9a0MPEoJkWyZvtMzEb6hQOD
-            redirect-uri: http://localhost:8080/login/oauth2/code/twitter
+            redirect-uri: https://grafo-analizer.herokuapp.com/login/oauth2/code/twitter
             authorization-grant-type: authorization_code
             scope: [ tweet.read, users.read, offline.access, list.read ]
         provider:
