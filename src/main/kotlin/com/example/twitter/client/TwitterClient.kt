@@ -31,7 +31,7 @@ class TwitterClient(
         val accessToken = client.accessToken.tokenValue
         var response = restTemplate.getTweetsFromList(listId, accessToken)
         val data: MutableList<TweetInfo> = response.data.toMutableList()
-        val users: MutableList<User> = response.includes.users.toMutableList()
+        val users: MutableSet<User> = response.includes.users.toMutableSet()
         val referencedTweetsData: MutableList<TweetInfo> = response.includes.referencedTweetsData.toMutableList()
         var count = 1
 
@@ -47,7 +47,7 @@ class TwitterClient(
 
         log.info("Made $count requests, tweets size: ${inRangeData.size}")
 
-        return ListInfoData(inRangeData, users, referencedTweetsData)
+        return ListInfoData(inRangeData, users.toList(), referencedTweetsData)
     }
 
     private fun RestTemplate.getTweetsFromList(
