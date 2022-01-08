@@ -1,10 +1,13 @@
 package com.example.twitter.client
 
 import com.example.common.HttpEntityBuilder
-import com.example.twitter.domain.ListInfoData
-import com.example.twitter.domain.TweetInfo
-import com.example.twitter.domain.TwitterTweetResponse
-import com.example.twitter.domain.User
+import com.example.twitter.domain.*
+import com.example.twitter.domain.ReferencedTweetType.QUOTE
+import com.example.twitter.domain.ReferencedTweetType.RETWEET
+import com.example.twitter.util.Operator.*
+import com.example.twitter.util.TWITTER_QUERY_LIMIT
+import com.example.twitter.util.createUserQueries
+import com.example.twitter.util.or
 import org.apache.logging.log4j.LogManager
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.*
@@ -69,6 +72,105 @@ class TwitterClient(
         }
 
         val exchange = exchange(url.toUriString(), HttpMethod.GET, requestEntity, TwitterTweetResponse::class.java)
+
+        if (exchange.statusCode != HttpStatus.OK || exchange.body == null) {
+            throw IllegalArgumentException("Bad request, server response: $exchange")
+        }
+        return exchange.body!!
+    }
+
+    fun getUsers(
+        userNames: List<String>,
+        client: OAuth2AuthorizedClient
+    ): List<User> {
+        log.info("Making ${userNames.size / 100} requests for users")
+        return userNames.chunked(100)
+            .flatMap { restTemplate.users(it, client.accessToken.tokenValue).data }
+    }
+
+    fun getRetweetsFromUsers(
+        userNames: List<String>,
+        client: OAuth2AuthorizedClient
+    ): ListInfoData {
+        require(userNames.isNotEmpty())
+
+        val accessToken = client.accessToken.tokenValue
+
+        val queries = createUserQueries(
+            userNames = userNames,
+            queryPrefix = "(${RETWEET or QUOTE})",
+            separatingOperator = OR,
+            userPrefix = FROM,
+            limit = TWITTER_QUERY_LIMIT
+        )
+
+        log.info("Prepared ${queries.size} queries: $queries")
+
+        val data = HashSet<TweetInfo>()
+        val users = HashSet<User>()
+        val referencedTweetsData = HashSet<TweetInfo>()
+        var count = 0
+
+        for (query in queries) {
+            var nextPageToken: String? = null
+            do {
+                val response = restTemplate.searchTweets(query, accessToken, nextPageToken)
+                count++
+                data += response.data
+                users += response.includes.users
+                referencedTweetsData += response.includes.referencedTweetsData
+                nextPageToken = response.meta.nextToken
+            } while (nextPageToken != null)
+        }
+
+        log.info("Made $count requests, tweets size: ${data.size}")
+
+        return ListInfoData(data.toList(), users.toList(), referencedTweetsData.toList())
+    }
+
+    private fun RestTemplate.users(userNames: List<String>, accessToken: String): TwitterUserResponse {
+        require(userNames.size in 1..100)
+
+        val requestEntity = HttpEntityBuilder.noBody()
+            .bearerAuthorization(accessToken)
+            .build()
+
+        val url = UriComponentsBuilder.fromHttpUrl("$baseUrl/users/by")
+            .queryParam("usernames", userNames.joinToString(separator = ","))
+            .queryParam("user.fields", "public_metrics")
+            .toUriString()
+
+        val exchange =
+            exchange(url, HttpMethod.GET, requestEntity, TwitterUserResponse::class.java)
+
+        if (exchange.statusCode != HttpStatus.OK || exchange.body == null) {
+            throw IllegalArgumentException("Bad request, server response: $exchange")
+        }
+        return exchange.body!!
+    }
+
+    private fun RestTemplate.searchTweets(
+        query: String,
+        accessToken: String,
+        nextPageToken: String? = null
+    ): TwitterTweetResponse {
+        val requestEntity = HttpEntityBuilder.noBody()
+            .bearerAuthorization(accessToken)
+            .build()
+
+        val url = UriComponentsBuilder.fromHttpUrl("$baseUrl/tweets/search/recent")
+            .queryParam("query", query)
+            .queryParam("expansions", "author_id,referenced_tweets.id")
+            .queryParam("tweet.fields", "author_id,referenced_tweets,created_at")
+            .queryParam("user.fields", "public_metrics")
+            .queryParam("max_results", 100)
+
+        if (nextPageToken != null) {
+            url.queryParam("next_token", nextPageToken)
+        }
+
+        val exchange =
+            exchange(url.build(false).toUri(), HttpMethod.GET, requestEntity, TwitterTweetResponse::class.java)
 
         if (exchange.statusCode != HttpStatus.OK || exchange.body == null) {
             throw IllegalArgumentException("Bad request, server response: $exchange")

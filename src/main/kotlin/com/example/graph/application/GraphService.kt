@@ -14,6 +14,40 @@ class GraphService(
     val client: TwitterClient
 ) {
 
+    fun generateFromSearch(names: List<String>, authorizedClient: OAuth2AuthorizedClient): GraphData {
+        val tweetsData = client.getRetweetsFromUsers(names, authorizedClient)
+
+        val users: Map<String, User> = client.getUsers(names, authorizedClient).associateBy { it.id }
+        val referencedTweetsData = tweetsData.referencedTweetsData.associateBy { it.id }
+
+        val edges = tweetsData.tweets
+            .flatMap { originalTweet ->
+                originalTweet.referencedTweets!!.map { referencedTweet ->
+                    val referencedTweetInfo = referencedTweetsData[referencedTweet.id]
+                    originalTweet.authorId to (
+                        referencedTweetInfo?.authorId
+                            ?: ""
+                        ) // mentioned tweet can be deleted already, in that case we provide empty string, which will be filtered in next line anyway
+                }
+            }.filter { (_, mentionedTweetAuthorId) ->
+                users.containsKey(mentionedTweetAuthorId)
+            }.filter {
+                it.second != it.first
+            }.map { (tweetAuthorId, mentionedTweetAuthorId) ->
+                UnorderedPair(tweetAuthorId, mentionedTweetAuthorId)
+            }.groupingBy { it }
+            .eachCount()
+            .map { (authorPair, count) ->
+                TwitterRetweetEdge(authorPair.first, authorPair.second, count)
+            }
+
+        val nodes = users.map { (_, user) ->
+            TwitterUserNode(user.id, user.name, user.username, user.publicMetrics.followers)
+        }
+
+        return GraphData(nodes, edges)
+    }
+
     fun generateFromList(listId: String, authorizedClient: OAuth2AuthorizedClient): GraphData {
         val info = client.getListInfo(listId, authorizedClient)
 
