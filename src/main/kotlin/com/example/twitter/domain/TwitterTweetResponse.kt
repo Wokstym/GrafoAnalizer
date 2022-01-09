@@ -1,15 +1,20 @@
 package com.example.twitter.domain
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.annotation.JsonValue
 import java.time.LocalDateTime
 
-class TwitterTweetResponse(
+data class TwitterTweetResponse(
     val data: List<TweetInfo>,
     val meta: MetaData,
     val includes: Includes
 )
 
-class TweetInfo(
+data class TwitterUserResponse(
+    val data: List<User>
+)
+
+data class TweetInfo(
     @field:JsonProperty("author_id")
     val authorId: String,
     @field:JsonProperty("created_at")
@@ -23,23 +28,29 @@ class TweetInfo(
         get() = referencedTweets?.isNotEmpty() ?: false
 }
 
-class MetaData(
+data class MetaData(
     @field:JsonProperty("next_token")
     val nextToken: String?,
     @field:JsonProperty("result_count")
     val resultCount: Int
 )
 
-class ReferencedTweet(
+data class ReferencedTweet(
     val id: String,
     val type: ReferencedTweetType
 )
 
-enum class ReferencedTweetType {
-    retweeted, quoted, replied_to;
+enum class ReferencedTweetType(
+    @field:JsonValue
+    val jsonValue: String,
+    val paramValue: String
+) {
+    RETWEET("retweeted", "is:retweet"),
+    QUOTE("quoted", "is:quote"),
+    REPLY("replied_to", "is:reply");
 }
 
-class Includes(
+data class Includes(
     val users: List<User>,
     @field:JsonProperty("tweets")
     val referencedTweetsData: List<TweetInfo>
