@@ -5,9 +5,9 @@ import com.fasterxml.jackson.annotation.JsonValue
 import java.time.LocalDateTime
 
 data class TwitterTweetResponse(
-    val data: List<TweetInfo>,
+    val data: List<TweetInfo>?,
     val meta: MetaData,
-    val includes: Includes
+    val includes: Includes?
 )
 
 data class TwitterUserResponse(

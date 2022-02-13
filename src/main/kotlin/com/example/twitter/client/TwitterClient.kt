@@ -33,16 +33,17 @@ class TwitterClient(
 
         val accessToken = client.accessToken.tokenValue
         var response = restTemplate.getTweetsFromList(listId, accessToken)
-        val data: MutableList<TweetInfo> = response.data.toMutableList()
-        val users: MutableSet<User> = response.includes.users.toMutableSet()
-        val referencedTweetsData: MutableList<TweetInfo> = response.includes.referencedTweetsData.toMutableList()
+        val data: MutableList<TweetInfo> = response.data?.toMutableList() ?: ArrayList()
+        val users: MutableSet<User> = response.includes?.users?.toMutableSet() ?: HashSet()
+        val referencedTweetsData: MutableList<TweetInfo> =
+            response.includes?.referencedTweetsData?.toMutableList() ?: ArrayList()
         var count = 1
 
         while (!data.last().createdAt.isBefore(maxDate) && response.meta.nextToken != null) {
             response = restTemplate.getTweetsFromList(listId, accessToken, response.meta.nextToken)
-            data += response.data
-            users += response.includes.users
-            referencedTweetsData += response.includes.referencedTweetsData
+            data += response.data ?: emptyList()
+            users += response.includes?.users ?: emptyList()
+            referencedTweetsData += response.includes?.referencedTweetsData ?: emptyList()
             count += 1
         }
 
@@ -116,9 +117,9 @@ class TwitterClient(
             do {
                 val response = restTemplate.searchTweets(query, accessToken, nextPageToken)
                 count++
-                data += response.data
-                users += response.includes.users
-                referencedTweetsData += response.includes.referencedTweetsData
+                data += response.data ?: emptyList()
+                users += response.includes?.users ?: emptyList()
+                referencedTweetsData += response.includes?.referencedTweetsData ?: emptyList()
                 nextPageToken = response.meta.nextToken
             } while (nextPageToken != null)
         }
