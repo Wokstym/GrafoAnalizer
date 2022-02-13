@@ -18,7 +18,7 @@ class TwitterOAuth2UserService(
     val default: DefaultOAuth2UserService = DefaultOAuth2UserService()
 
     override fun loadUser(userRequest: OAuth2UserRequest?): OAuth2User {
-        val user = default.loadUser(userRequest)
+        val user: OAuth2User = default.loadUser(userRequest)
 
         val (data, id) = user.extractAttributes()
 
@@ -48,7 +48,7 @@ class TwitterOAuth2UserService(
         OAuth2AuthenticationException("Error loading user by Twitter authentication - no $attributeName attribute")
 }
 
-class OAuth2UserEntityDetails(
+data class OAuth2UserEntityDetails(
     val db: UserEntity,
     private val authorities: MutableCollection<out GrantedAuthority>,
     private val data: MutableMap<String, String>

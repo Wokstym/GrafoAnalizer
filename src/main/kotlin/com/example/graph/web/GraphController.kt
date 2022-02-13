@@ -29,7 +29,7 @@ class GraphController(
         return ResponseEntity.ok(response)
     }
 
-    @GetMapping("/search")
+    @PostMapping("/search")
     fun generateFromSearch(
         @RequestBody @Valid request: GetGraphSearchRequest,
         @RegisteredOAuth2AuthorizedClient client: OAuth2AuthorizedClient,
@@ -43,10 +43,4 @@ class GraphController(
     data class GetGraphSearchRequest(
         val userNames: List<@Size(max = 15) String>
     )
-
-    // temporary to easy get cookie value after login to insert to postman
-    @GetMapping("/")
-    fun cookie(@CookieValue("JSESSIONID") token: String): String {
-        return token
-    }
 }
